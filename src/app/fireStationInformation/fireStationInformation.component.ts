@@ -12,7 +12,7 @@ import {
 } from '../../FireThing';
 import {
   FireThingService
-} from '../../FireThingService';
+} from '../../Service/FireThingService';
 
 
 export class SaveFireOuterResult{

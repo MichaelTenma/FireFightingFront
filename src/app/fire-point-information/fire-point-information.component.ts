@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FirePoint } from '../../Entity/FirePoint';
 import { FireThing } from '../../FireThing';
-import { FireThingService } from '../../FireThingService';
+import { FireThingService } from '../../Service/FireThingService';
 
 @Component({
   selector: 'app-fire-point-information',

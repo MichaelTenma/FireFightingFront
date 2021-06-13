@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FireThing } from 'src/FireThing';
-import { FireThingService } from '../../FireThingService';
-import { StatusService } from '../../StatusService';
+import { FireThingService } from '../../Service/FireThingService';
+import { StatusService } from '../../Service/StatusService';
 
 @Component({
   selector: 'app-construction',

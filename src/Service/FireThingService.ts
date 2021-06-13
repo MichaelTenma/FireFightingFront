@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FireThing } from './FireThing';
+import { FireThing } from '../FireThing';
 
 @Injectable({
     providedIn: 'root',

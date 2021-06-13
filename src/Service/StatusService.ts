@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import {
   FireThing
-} from './FireThing';
+} from '../FireThing';
 
 import { GameTimeService } from './GameTimeService';
 
@@ -37,8 +37,6 @@ export class StatusService {
   public getConstructFireThing(): FireThing {
     return this.constructFireThing;
   }
-
-
 
   private modifyUserMoney(deltaMoney: number) {
     this.userMoney += deltaMoney;

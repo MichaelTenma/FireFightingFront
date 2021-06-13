@@ -10,22 +10,22 @@ import {
 } from 'ol/style';
 import {
   FireCar
-} from './Entity/FireCar';
+} from '../Entity/FireCar';
 import {
   FireStation
-} from './Entity/FireStation';
+} from '../Entity/FireStation';
 import {
   FirePoint
-} from './Entity/FirePoint';
+} from '../Entity/FirePoint';
 import Point from 'ol/geom/Point';
 import {
   FireThingEnum
-} from './FireThingEnum';
+} from '../FireThingEnum';
 import Map from 'ol/Map';
 import {
   Coordinate,
   Pixel
-} from './BasicOpenlayerType';
+} from '../BasicOpenlayerType';
 
 @Injectable({
   providedIn: 'root',

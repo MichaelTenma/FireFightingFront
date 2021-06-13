@@ -15,19 +15,17 @@ import {
 } from './FireThingLayerService';
 import {
   FirePoint
-} from './Entity/FirePoint';
-import VectorSource from 'ol/source/Vector';
-import Point from 'ol/geom/Point';
+} from '../Entity/FirePoint';
 import Feature from 'ol/Feature';
 import {
   fromLonLat
 } from 'ol/proj';
 import {
   FireCar
-} from './Entity/FireCar';
+} from '../Entity/FireCar';
 import {
   UUID
-} from './UUID';
+} from '../UUID';
 
 @Injectable({
   providedIn: 'root',
@@ -54,7 +52,7 @@ export class FireService {
 
     let probArray: number[] = [13.45, 43.46, 32.52, 10.57].map(e => e * 100);
     let secondArray: number[] = [0, 0, 5, 30, 120].map(e => e * 60) /* 最大设定为两小时 */
-    console.log(secondArray);
+    // console.log(secondArray);
 
     let factor = Math.random() * 10000;
     let prob = 0;
@@ -90,7 +88,7 @@ export class FireService {
 
       for (var i = 0; i < this.firePointFeatureList.length; i++) {
         let e: Feature = this.firePointFeatureList[i];
-        let firePoint: FirePoint = <FirePoint> FireThingLayerService.getDataFromFeature(e);
+        let firePoint: FirePoint = < FirePoint > FireThingLayerService.getDataFromFeature(e);
         if (firePoint.getCurrentFireLevel() <= 0) {
           this.fireThingLayerService.removeFeature(e);
           whenFireDone(firePoint);
@@ -123,21 +121,12 @@ export class FireService {
           this.gameTimeService.registerTask(() => {
             /* 向地图中加入火灾，计算火灾位置 */
             let firePoint: FirePoint = new FirePoint(randomFireLevel, fireTime, this.statusService);
-            let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
-            firePoint.addSaveFirePower([fireCar]);
-
-            this.fireThingLayerService.add(fireCar, coordinate);
+            // let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
+            // firePoint.addSaveFirePower([fireCar]);
+            // this.fireThingLayerService.add(fireCar, coordinate);
+            
             let firePoinrFeature: Feature = this.fireThingLayerService.add(firePoint, coordinate);
-
-            // let point: Point = new Point(coordinate);
-            // let feature: Feature = new Feature(point);
-            // feature.set("data", firePoint);
-
             this.firePointFeatureList.push(firePoinrFeature);
-
-
-            // 火灾点矢量源.addFeature(feature);
-            // console.log({feature, 火灾点矢量源});
           }, randomFireSecond, false);
         } else {
           console.log("随机生成火灾失败，等待下一轮判定");

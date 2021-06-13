@@ -1,4 +1,4 @@
-import { Path, Route } from './Entity/Path';
+import { Path, Route } from '../Entity/Path';
 import { GameTimeService } from './GameTimeService';
 
 export class PathService{

@@ -9,8 +9,6 @@ import {
   defaults as ControlDefaults
 } from 'ol/control';
 
-import Geometry from 'ol/geom/Geometry';
-
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -18,13 +16,7 @@ import OSM from 'ol/source/OSM';
 import XYZ from 'ol/source/XYZ';
 import {
   StatusService
-} from '../StatusService';
-
-import Point from 'ol/geom/Point';
-import Feature from 'ol/Feature';
-import VectorSource from 'ol/source/Vector';
-import VectorLayer from 'ol/layer/Vector';
-
+} from '../Service/StatusService';
 
 import {
   FireThing
@@ -40,26 +32,12 @@ import {
 import {
   FireStation
 } from 'src/Entity/FireStation';
-
-import Overlay from 'ol/Overlay';
-
-import {
-  NgZone
-} from '@angular/core';
-import {
-  FireThingService
-} from 'src/FireThingService';
-
-import {
-  fromLonLat
-} from 'ol/proj';
-
 import {
   GameTimeService
-} from '../GameTimeService';
+} from '../Service/GameTimeService';
 import {
   FireService
-} from '../FireService';
+} from '../Service/FireService';
 import {
   FirePoint
 } from 'src/Entity/FirePoint';
@@ -69,12 +47,8 @@ import {
 
 import {
   FireThingLayerService
-} from '../FireThingLayerService';
-import {
-  FireThingEnum
-} from 'src/FireThingEnum';
-// import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-// import { FireStationPopupComponent} from './Popup/FireStationPopup/FireStationPopup.component';
+} from '../Service/FireThingLayerService';
+
 import { Coordinate, Pixel } from '../BasicOpenlayerType';
 
 @Component({
@@ -85,25 +59,15 @@ import { Coordinate, Pixel } from '../BasicOpenlayerType';
 export class AppComponent implements AfterViewInit {
   title = 'FireFightingFront';
   map: Map;
-  private statusService: StatusService;
-  // private 火灾点矢量源: VectorSource;
-  // private 火灾点矢量图层: VectorLayer;
-
   showingFireStation: FireStation;
   showingFirePoint: FirePoint;
 
   constructor(
-    statusService: StatusService,
-    private zone: NgZone,
-    private fireThingService: FireThingService,
     private gameTimeService: GameTimeService,
     private fireService: FireService,
-    private fireThingLayerService: FireThingLayerService
-    // private modalService: NgbModal
-
-  ) {
-    this.statusService = statusService;
-  }
+    private fireThingLayerService: FireThingLayerService,
+    private statusService: StatusService
+  ) {}
 
   scale(factor: number) {
     this.gameTimeService.setGameTimeScale(factor);
@@ -142,7 +106,6 @@ export class AppComponent implements AfterViewInit {
 
     // 监听singleclick事件
     this.map.on('singleclick', async (event: any) => {
-      console.log(event);
       let pixel: Pixel = event.pixel;
       let coordinate: Coordinate = event.coordinate;
       /* 正在为出警选择火灾点 */
@@ -238,7 +201,6 @@ export class AppComponent implements AfterViewInit {
 
   private selectTargetFirePointForSaveFire: boolean = false;
   saveFire(event: SaveFireOuterResult) {
-    console.log("app", event.fireStation, event.selectFireCarNum);
     /* 提示用户选择一个火苗 */
     alert("请单击选择一个火灾点");
     // 监听singleclick事件
@@ -259,6 +221,5 @@ export class AppComponent implements AfterViewInit {
     }
     this.selectTargetFirePointForSaveFire = true;
     this.map.on('singleclick', fn);
-
   }
 }

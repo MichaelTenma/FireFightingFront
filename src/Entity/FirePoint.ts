@@ -3,7 +3,7 @@ import {
 } from './FireCar';
 import {
   StatusService
-} from '../StatusService';
+} from '../Service/StatusService';
 
 import {
   BasicMath
