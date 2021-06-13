@@ -1,0 +1,18 @@
+<div style="padding-top: 6px;">
+  <div>
+    资金：{{ this.getUserMoney() | rmbFormat }}
+  </div>
+
+  <div style="display: flex;flex-direction: row;" appSelected>
+    <div *ngFor="let ele of fireThingService.getList() let i = index" class="construction-item" index="{{ i }}"
+      (click)="itemClick(ele, i)">
+      <img src="{{ ele.getUrl() }}" alt="{{ ele.getName() }}" width="70px" height="65px" />
+      <span style="margin-top: 5px;">{{ ele.getName() }}</span>
+      <span>{{ ele.getMoney() | rmbFormat }}</span>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: row-reverse;">
+    <button mat-flat-button color="warn">发生火灾</button>
+  </div>
+
+</div>

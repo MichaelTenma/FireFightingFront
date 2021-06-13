@@ -1,0 +1,18 @@
+<div class="container" *ngIf="!!fireStation">
+  <h1>消防站</h1>
+  <span>{{ fireStation.getName() }}</span>
+  <h3 style="margin-top: 16px;font-weight: bold;">灭火力量</h3>
+  <div class="bodyContainer">
+    <div class="construction-item">
+      <img src="{{ fireThing.getUrl() }}" alt="{{ fireThing.getName() }}" width="70px" height="65px" />
+      <span style="margin-top: 5px;">{{ fireThing.getName() }}</span>
+      <span>{{fireStation.getNumOfFireCar()}} 台</span>
+    </div>
+
+    <div style="width:50%;display: flex;flex-direction: column;">
+      <span>出动消防车：{{ value }} 台</span>
+      <mat-slider [max]="max" [min]="0" [step]="1" [(value)]="value" [disabled]="max <= 0"></mat-slider>
+      <button mat-flat-button color="accent" (click)="saveFire()" *ngIf="value > 0">出警</button>
+    </div>
+  </div>
+</div>

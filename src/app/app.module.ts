@@ -1,18 +1,65 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {
+  BrowserModule
+} from '@angular/platform-browser';
+import {
+  NgModule
+} from '@angular/core';
+// import { FormsModule } from '@angular/forms';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import {
+  AppRoutingModule
+} from './app-routing.module';
+import {
+  AppComponent
+} from './app.component';
+import {
+  ConstructionComponent
+} from './construction/construction.component';
+import {
+  BrowserAnimationsModule
+} from '@angular/platform-browser/animations';
 
+// import { FireStationPopupComponent } from './Popup/FireStationPopup/FireStationPopup.component';
+
+// import { MatSliderModule } from '@angular/material/slider';
+import {
+  MatTabsModule
+} from '@angular/material/tabs';
+import {
+  SelectedDirective
+} from './Directives/selected.directive';
+import {
+  RMBFormatPipe
+} from './Pipe/RMBFormat.pipe';
+
+import {
+  NgbPaginationModule,
+  NgbAlertModule,
+  NgbModule
+} from '@ng-bootstrap/ng-bootstrap';
+import { FireStationInformationComponent } from './fireStationInformation/fireStationInformation.component';
+
+import {MatButtonModule} from '@angular/material/button';
+import { FirePointInformationComponent } from './fire-point-information/fire-point-information.component';
+import {MatSliderModule} from '@angular/material/slider';
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ConstructionComponent,
+    SelectedDirective,
+    RMBFormatPipe,
+    // FireStationPopupComponent,
+    FireStationInformationComponent,
+    FirePointInformationComponent,
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    MatTabsModule,MatButtonModule,MatSliderModule,
+    NgbPaginationModule, NgbAlertModule, NgbModule
   ],
-  providers: [],
+  // providers: [RMBFormatPipe],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
