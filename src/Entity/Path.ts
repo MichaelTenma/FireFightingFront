@@ -2,9 +2,7 @@ import Feature from 'ol/Feature';
 import LineString from 'ol/geom/LineString';
 import { FireCar } from './FireCar';
 import { FireCarScheduleInterface } from './FireCarScheduleInterface';
-import Point from 'ol/geom/Point';
-export type Coordinate = Array<number>;
-
+import { Coordinate } from '../BasicOpenlayerType';
 export class Route{
     private route: LineString;
     private kmph: number;/* km/h */
@@ -23,18 +21,24 @@ export class Route{
     /**
      * cal distance in meter
      */
-    private static calDistanceFromRouteBegin(currentGameTime: number, startGameTime: number, kmph: number) : number{
+    private static calFactorFromRouteBegin(currentGameTime: number, startGameTime: number, kmph: number, routeMeter: number) : number{
         let deltaGameTime = currentGameTime - startGameTime;
         let deltaGameTimeSecond = deltaGameTime / 1000.0;
 
         /* distance in meter */
         let distance = Route.kmphTomps(kmph) * deltaGameTimeSecond;
-        return distance;
+        let factor = distance / routeMeter;
+
+        // console.log({currentGameTime, startGameTime, deltaGameTimeSecond, distance, factor});
+
+        return factor;
     }
 
     public getCoordinateAt(currentGameTime: number, startGameTime: number) : Coordinate{
-        let distance_meter = Route.calDistanceFromRouteBegin(currentGameTime, startGameTime, this.kmph);
-        return this.route.getCoordinateAtM(distance_meter);
+        // console.log("route length: ", this.route.getLength());
+        let factor = Route.calFactorFromRouteBegin(currentGameTime, startGameTime, this.kmph, this.route.getLength());
+        
+        return this.route.getCoordinateAt(factor);
     }
 
     public getSecond(): number{
@@ -53,15 +57,19 @@ export class Path{
     private currentRouteStartTime: number;
     
     constructor(
-        routes: Feature[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar
+        routes: Feature[] | Route[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar
     ){
-        this.routes = [];
-        routes.forEach(e => {
-            let geometry: LineString = e.getGeometry();
-            let speed: number = e.get("speed");
-            let route: Route = new Route(geometry, speed);
-            this.routes.push(route);
-        });
+        if(routes[0] instanceof Feature){
+            this.routes = [];
+            routes.forEach((e: Feature) => {
+                let geometry: LineString = e.getGeometry();
+                let speed: number = e.get("speed");
+                let route: Route = new Route(geometry, speed);
+                this.routes.push(route);
+            });
+        }else{
+            this.routes = routes;
+        }
 
         this.from = from;
         this.to = to;
@@ -72,26 +80,29 @@ export class Path{
      * 计算得到当前fireCar走到哪里，O(n)，但幂等
      * 不要求currentTime的次序
      */
-    private getCoordinateAt(currentTime: number): Coordinate{
+    public getCoordinateAt(currentTime: number): Coordinate{
         // let deltaSecond = (currentTime - this.startTime) / 1000.0;
-        let coordinate: Coordinate = null;
+        let resCoordinate: Coordinate = null;
+
+        let tempCoordinate: Coordinate = null;
         let sumSecond = 0;
         for(let i = 0;i < this.routes.length;i++){
             let route: Route = this.routes[i];
-            coordinate = route.getCoordinateAt(currentTime, this.startTime + sumSecond + 1000);
-            if(!!coordinate){
+            tempCoordinate = route.getCoordinateAt(currentTime, this.startTime + sumSecond + 1000);
+            if(!!tempCoordinate){
+                resCoordinate = tempCoordinate;
                 break;
             }
             sumSecond += route.getSecond();
         }
-        return coordinate;
+        return resCoordinate;
     }
 
     /**
      * 计算得到当前fireCar走到哪里，<= o(n)最好时o(1) ~ o(2)，非幂等
      * 要求currentTime必须从小到大调用
      */
-    private getCurrentCoordiate(currentTime: number): Coordinate{
+    public getCurrentCoordiate(currentTime: number): Coordinate{
         let coordinate: Coordinate = null;
         let sumSecond = 0;
         for(let i = this.currentRouteIndex;i < this.routes.length;i++){
@@ -126,4 +137,7 @@ export class Path{
         this.currentRouteIndex = 0;
     }
     
+    public getFireCar() : FireCar {
+        return this.fireCar;
+    }
 }

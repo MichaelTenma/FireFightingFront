@@ -47,11 +47,10 @@ export class FireThingLayerService {
 
   private static getFeatureStyle(feature: Feature): Style {
     if (feature.get("visibility") === false) return null;
-    const styles = FireThingLayerService.defaultStyle();
-    return styles[feature.get("type")];
+    return FireThingLayerService.defaultStyle(feature.get("type"));
   }
 
-  private static defaultStyle(): Style[] {
+  public static defaultStyle(type: FireThingEnum): Style[] {
     let styles: Style[] = [];
     styles[FireThingEnum.FireCar] = new Style({
       image: new Icon({
@@ -71,7 +70,7 @@ export class FireThingLayerService {
         scale: 0.5
       })
     });
-    return styles;
+    return styles[type];
   }
 
   private getType(fireThing: FireCar | FireStation | FirePoint): FireThingEnum {
@@ -180,15 +179,29 @@ export class FireThingLayerService {
     this.fireThingSource.removeFeature(feature);
   }
 
-  public setVisibility(fireThing: FireCar | FirePoint | FireStation, visibility: boolean) {
-    const type: FireThingEnum = this.getType(fireThing);
-    if (!!type) {
-      let features: Feature[] = this.getAllFeature(type);
-      features.forEach(feature => {
-        feature.set('visibility', visibility);
-      });
+  public setVisibility(fireThing: FireCar | FirePoint | FireStation | Feature, visibility: boolean) {
+    let feature:Feature = fireThing;
+    if(!(fireThing instanceof Feature)){
+      feature = this.getFeatureBy(fireThing);
+    }
+    // console.log(feature, !!feature, "尝试修改", visibility)
+    if(!!feature){
+      feature.set('visibility', visibility);
     }
   }
+
+  public getFeatureBy(fireThing: FireCar | FirePoint | FireStation) : Feature{
+    let resFeature: Feature;
+    let features: Feature[] = this.getAllFeature(this.getType(fireThing));
+    for(let i = 0;i < features.length;i++){
+      if(fireThing === FireThingLayerService.getDataFromFeature(features[i])){
+        resFeature = features[i];
+        break;
+      }
+    }
+    return resFeature;
+  }
+
 
   public getFireThingLayer(): VectorLayer {
     return this.fireThingLayer;
@@ -196,5 +209,9 @@ export class FireThingLayerService {
 
   public static getDataFromFeature(feature: Feature): FireCar | FirePoint | FireStation {
     return feature.get('data');
+  }
+
+  public renderMap(){
+    this.map.render();
   }
 }

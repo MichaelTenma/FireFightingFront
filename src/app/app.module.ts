@@ -42,6 +42,8 @@ import { FireStationInformationComponent } from './fireStationInformation/fireSt
 import {MatButtonModule} from '@angular/material/button';
 import { FirePointInformationComponent } from './fire-point-information/fire-point-information.component';
 import {MatSliderModule} from '@angular/material/slider';
+import { HttpClientModule } from '@angular/common/http';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -57,7 +59,7 @@ import {MatSliderModule} from '@angular/material/slider';
     AppRoutingModule,
     BrowserAnimationsModule,
     MatTabsModule,MatButtonModule,MatSliderModule,
-    NgbPaginationModule, NgbAlertModule, NgbModule
+    NgbPaginationModule, NgbAlertModule, NgbModule,HttpClientModule
   ],
   // providers: [RMBFormatPipe],
   bootstrap: [AppComponent]

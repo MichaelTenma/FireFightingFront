@@ -50,6 +50,7 @@ import {
 } from '../Service/FireThingLayerService';
 
 import { Coordinate, Pixel } from '../BasicOpenlayerType';
+import { PathService } from '../Service/PathService';
 
 @Component({
   selector: 'app-root',
@@ -66,7 +67,8 @@ export class AppComponent implements AfterViewInit {
     private gameTimeService: GameTimeService,
     private fireService: FireService,
     private fireThingLayerService: FireThingLayerService,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private pathService: PathService
   ) {}
 
   scale(factor: number) {
@@ -82,10 +84,10 @@ export class AppComponent implements AfterViewInit {
       }),
       layers: [
         new TileLayer({
-          source: new XYZ({
-            url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7'
-          }),
-          // source: new OSM()
+          // source: new XYZ({
+          //   url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7'
+          // }),
+          source: new OSM()
         })
       ],
       controls: ControlDefaults({
@@ -204,12 +206,16 @@ export class AppComponent implements AfterViewInit {
     /* 提示用户选择一个火苗 */
     alert("请单击选择一个火灾点");
     // 监听singleclick事件
-    let fn: Function = (fnEvent: any) => {
+    let fn: Function = async (fnEvent: any) => {
       let pixel: Pixel = fnEvent.pixel;
       let firePoint: FirePoint = this.fireThingLayerService.getOneFirePointAt(pixel);
       if (!!firePoint) {
         /* add to PathService */
-        firePoint.addSaveFirePower(event.fireStation.saveFire(event.selectFireCarNum));
+        let fireCars: FireCar[] = event.fireStation.saveFire(event.selectFireCarNum);
+        this.pathService.registerPath(await this.pathService.requestAPath(
+          event.fireStation, firePoint, fireCars
+        ));
+        firePoint.addSaveFirePower(fireCars);
         this.showingFirePoint = firePoint;
         alert("消防车已经出发");
       } else {
