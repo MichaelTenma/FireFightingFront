@@ -104,7 +104,9 @@ export class AppComponent implements AfterViewInit {
   async init() {
     this.fireThingLayerService.setMap(this.map);
     /* 没有进行深克隆 */
+    this.map.addLayer(this.pathService.getRouterLayer());
     this.map.addLayer(this.fireThingLayerService.getFireThingLayer());
+
 
     // 监听singleclick事件
     this.map.on('singleclick', async (event: any) => {

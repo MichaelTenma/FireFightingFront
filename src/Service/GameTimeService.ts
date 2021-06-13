@@ -141,7 +141,7 @@ private restRunTime: number;
   public cancel() {
     let observable = this.getObservable();
     if (!!observable) {
-      console.log("change scale: 取消任务");
+      // console.log("change scale: 取消任务");
       observable.unsubscribe();
     }
   }
@@ -203,7 +203,7 @@ export class GameTimeService {
 
   private static cancelAndRestartTasks(tasks: Task[], lastGameTimeScale: number, currentGameTimeScale: number) {
     /* 取消任务 */
-    console.log({tasks});
+    // console.log({tasks});
     let filter: Task[] = [];
     tasks.forEach((e: Task) => {
       e.cancel();
@@ -211,7 +211,7 @@ export class GameTimeService {
       if (e.hasNextRun()) {
         filter.push(e);
         /* 重新开始 */
-        console.log("重新启动");
+        // console.log("重新启动");
         e.run(lastGameTimeScale, currentGameTimeScale);
       }
     });

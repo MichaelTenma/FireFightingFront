@@ -28,17 +28,12 @@ export class Route{
         /* distance in meter */
         let distance = Route.kmphTomps(kmph) * deltaGameTimeSecond;
         let factor = distance / routeMeter;
-
-        // console.log({currentGameTime, startGameTime, deltaGameTimeSecond, distance, factor});
-
         return factor;
     }
 
     public getCoordinateAt(currentGameTime: number, startGameTime: number) : Coordinate{
-        // console.log("route length: ", this.route.getLength());
         let factor = Route.calFactorFromRouteBegin(currentGameTime, startGameTime, this.kmph, this.route.getLength());
-        
-        return this.route.getCoordinateAt(factor);
+        return factor < 1 ? this.route.getCoordinateAt(factor) : null;
     }
 
     public getSecond(): number{
@@ -81,14 +76,13 @@ export class Path{
      * 不要求currentTime的次序
      */
     public getCoordinateAt(currentTime: number): Coordinate{
-        // let deltaSecond = (currentTime - this.startTime) / 1000.0;
         let resCoordinate: Coordinate = null;
 
         let tempCoordinate: Coordinate = null;
         let sumSecond = 0;
         for(let i = 0;i < this.routes.length;i++){
             let route: Route = this.routes[i];
-            tempCoordinate = route.getCoordinateAt(currentTime, this.startTime + sumSecond + 1000);
+            tempCoordinate = route.getCoordinateAt(currentTime, this.startTime + sumSecond * 1000);
             if(!!tempCoordinate){
                 resCoordinate = tempCoordinate;
                 break;
@@ -104,7 +98,6 @@ export class Path{
      */
     public getCurrentCoordiate(currentTime: number): Coordinate{
         let coordinate: Coordinate = null;
-        let sumSecond = 0;
         for(let i = this.currentRouteIndex;i < this.routes.length;i++){
             let route: Route = this.routes[i];
             coordinate = route.getCoordinateAt(currentTime, this.currentRouteStartTime);
@@ -112,11 +105,9 @@ export class Path{
                 /* 当前这条路还没走完，继续走就行 */
                 break;
             }
-
             /* 这条路走完了，可以走下一条路了 */
-            sumSecond += route.getSecond();
-            this.currentRouteIndex ++;
-            this.currentRouteStartTime += sumSecond;
+            this.currentRouteIndex = i + 1;
+            this.currentRouteStartTime += route.getSecond() * 1000;
         }
         return coordinate;
     }

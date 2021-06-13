@@ -211,7 +211,7 @@ export class FireThingLayerService {
     return feature.get('data');
   }
 
-  public renderMap(){
-    this.map.render();
-  }
+  // public renderMap(){
+  //   this.map.render();
+  // }
 }

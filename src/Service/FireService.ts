@@ -106,7 +106,7 @@ export class FireService {
       () => {
         if (Math.random() < 0.02) {
           /* 2%的概率发生火灾 */
-          console.log("随机生成一次火灾");
+          // console.log("随机生成一次火灾");
           let randomFireLevel = FireService.randomFireLevel();
           let randomFireSecond = Math.random() * 120; /* 随机生成一个两分钟内发生的火灾 */
           let fireTime_ms: number = this.gameTimeService.getGameTime().valueOf() + randomFireSecond * 1000;
@@ -121,15 +121,14 @@ export class FireService {
           this.gameTimeService.registerTask(() => {
             /* 向地图中加入火灾，计算火灾位置 */
             let firePoint: FirePoint = new FirePoint(randomFireLevel, fireTime, this.statusService);
-            // let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
-            // firePoint.addSaveFirePower([fireCar]);
-            // this.fireThingLayerService.add(fireCar, coordinate);
+            /* test */
+            let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
+            firePoint.addSaveFirePower([fireCar]);
+            this.fireThingLayerService.add(fireCar, coordinate);
             
             let firePoinrFeature: Feature = this.fireThingLayerService.add(firePoint, coordinate);
             this.firePointFeatureList.push(firePoinrFeature);
           }, randomFireSecond, false);
-        } else {
-          console.log("随机生成火灾失败，等待下一轮判定");
         }
       }, true
     );
