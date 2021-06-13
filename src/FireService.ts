@@ -9,6 +9,10 @@ import {
 import {
   StatusService
 } from './StatusService';
+
+import {
+  FireThingLayerService
+} from './FireThingLayerService';
 import {
   FirePoint
 } from './Entity/FirePoint';
@@ -33,7 +37,8 @@ export class FireService {
   private firePointFeatureList: Array < Feature > ;
   constructor(
     private gameTimeService: GameTimeService,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private fireThingLayerService: FireThingLayerService
   ) {
     this.firePointFeatureList = new Array < Feature > ();
   }
@@ -73,7 +78,7 @@ export class FireService {
   /**
    * 更新火灾点的火势
    */
-  public updateFirePoint(火灾点矢量源: VectorSource, whenFireDone: Function) {
+  public updateFirePoint(whenFireDone: Function) {
     this.gameTimeService.registerTask(() => {
       this.firePointFeatureList.forEach(e => {
         let firePoint: FirePoint = e.get("data");
@@ -85,9 +90,9 @@ export class FireService {
 
       for (var i = 0; i < this.firePointFeatureList.length; i++) {
         let e: Feature = this.firePointFeatureList[i];
-        let firePoint: FirePoint = e.get("data");
+        let firePoint: FirePoint = <FirePoint> FireThingLayerService.getDataFromFeature(e);
         if (firePoint.getCurrentFireLevel() <= 0) {
-          火灾点矢量源.removeFeature(e);
+          this.fireThingLayerService.removeFeature(e);
           whenFireDone(firePoint);
           /* 是否能令firePoint指向的内存设置为null, 即将其销毁 */
           this.firePointFeatureList.splice(i, 1); // 将使后面的元素依次前移，数组长度减1
@@ -97,7 +102,7 @@ export class FireService {
     }, 2, true);
   }
 
-  public randomFire(火灾点矢量源: VectorSource) {
+  public randomFire() {
     return new Task(
       10,
       () => {
@@ -114,19 +119,24 @@ export class FireService {
           let coordinate = fromLonLat([113.333333 + randomLon, 23.333333 + randomLat]);
           // console.log({randomFireLevel, randomFireSecond});
 
-        //   randomFireLevel = 0;
+          //   randomFireLevel = 0;
           this.gameTimeService.registerTask(() => {
             /* 向地图中加入火灾，计算火灾位置 */
             let firePoint: FirePoint = new FirePoint(randomFireLevel, fireTime, this.statusService);
-            firePoint.addSaveFirePower([new FireCar(UUID.uuid(), '消防车', null)]);
+            let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
+            firePoint.addSaveFirePower([fireCar]);
 
-            let point: Point = new Point(coordinate);
-            let feature: Feature = new Feature(point);
-            feature.set("data", firePoint);
+            this.fireThingLayerService.add(fireCar, coordinate);
+            let firePoinrFeature: Feature = this.fireThingLayerService.add(firePoint, coordinate);
 
-            this.firePointFeatureList.push(feature);
+            // let point: Point = new Point(coordinate);
+            // let feature: Feature = new Feature(point);
+            // feature.set("data", firePoint);
 
-            火灾点矢量源.addFeature(feature);
+            this.firePointFeatureList.push(firePoinrFeature);
+
+
+            // 火灾点矢量源.addFeature(feature);
             // console.log({feature, 火灾点矢量源});
           }, randomFireSecond, false);
         } else {

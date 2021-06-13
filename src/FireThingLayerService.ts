@@ -1,3 +1,6 @@
+import {
+  Injectable
+} from '@angular/core';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import Feature from 'ol/Feature';
@@ -14,33 +17,36 @@ import {
 import {
   FirePoint
 } from './Entity/FirePoint';
-import {
-  UUID
-} from './UUID';
 import Point from 'ol/geom/Point';
 import {
   FireThingEnum
 } from './FireThingEnum';
+import Map from 'ol/Map';
+import {
+  Coordinate,
+  Pixel
+} from './BasicOpenlayerType';
 
-type Coordinate = Array < number > ;
-
+@Injectable({
+  providedIn: 'root',
+})
 export class FireThingLayerService {
   private fireThingSource: VectorSource;
   private fireThingLayer: VectorLayer;
 
-  constructor(
+  /* readonly */
+  private map: Map;
 
-  ) {
-    this.fireThingSource = new VectorSource({
-      style: FireThingLayerService.getFeatureStyle
-    });
+  constructor() {
+    this.fireThingSource = new VectorSource();
     this.fireThingLayer = new VectorLayer({
-      source: this.fireThingSource
+      source: this.fireThingSource,
+      style: FireThingLayerService.getFeatureStyle
     });
   }
 
   private static getFeatureStyle(feature: Feature): Style {
-    if (feature.get("visibility") == false) return null;
+    if (feature.get("visibility") === false) return null;
     const styles = FireThingLayerService.defaultStyle();
     return styles[feature.get("type")];
   }
@@ -53,13 +59,13 @@ export class FireThingLayerService {
         scale: 0.4
       })
     });
-    styles[FireThingEnum.FireCar] = new Style({
+    styles[FireThingEnum.FireStation] = new Style({
       image: new Icon({
         src: "./assets/FireImage/消防站点.png",
         scale: 0.3
       })
     });
-    styles[FireThingEnum.FireCar] = new Style({
+    styles[FireThingEnum.FirePoint] = new Style({
       image: new Icon({
         src: "./assets/FireImage/火灾点.png",
         scale: 0.5
@@ -68,19 +74,23 @@ export class FireThingLayerService {
     return styles;
   }
 
-  private getType(fireaThing: FireCar | FireStation | FirePoint): FireThingEnum {
+  private getType(fireThing: FireCar | FireStation | FirePoint): FireThingEnum {
     let type: FireThingEnum;
-    if (typeof fireaThing === typeof FireCar) {
+    if (fireThing instanceof FireCar) {
       /* 消防车默认情况下是不可见的，因为一开始就被加到某一消防站中 */
       type = FireThingEnum.FireCar;
-    } else if (typeof fireaThing === typeof FireStation) {
+    } else if (fireThing instanceof FireStation) {
       type = FireThingEnum.FireStation;
-    } else if (typeof fireaThing === typeof FirePoint) {
+    } else if (fireThing instanceof FirePoint) {
       type = FireThingEnum.FirePoint;
-    }else{
-        type = null;
+    } else {
+      type = null;
     }
     return type;
+  }
+
+  public setMap(map: Map) {
+    this.map = map;
   }
 
   public add(data: FireCar | FireStation | FirePoint, coordinate: Coordinate): Feature {
@@ -92,13 +102,13 @@ export class FireThingLayerService {
       /* 消防车默认情况下是不可见的，因为一开始就被加到某一消防站中 */
       visibility = false;
     }
-
     let feature: Feature;
     if (!!type) {
       feature = new Feature(point);
       feature.set("type", type);
       feature.set("data", data);
       feature.set("visibility", visibility);
+
       this.fireThingSource.addFeature(feature);
     }
     return feature;
@@ -109,8 +119,10 @@ export class FireThingLayerService {
     return allFeatures.filter(feature => feature.get('type') === type);
   }
 
-  public getAllFeatureAt(type: FireThingEnum, coordinate: Coordinate): Feature[] {
-    const features: Feature[] = this.fireThingSource.getFeaturesAtCoordinate(coordinate);
+  public getAllFeatureAt(type: FireThingEnum, pixel: Pixel): Feature[] {
+    const features: Feature[] = this.map.getFeaturesAtPixel(pixel, {
+      layerFilter: (layer: any) => layer === this.fireThingLayer
+    })
     let resArray: Feature[] = [];
     features.forEach((feature: Feature) => {
       let featureType: FireThingEnum = feature.get('type');
@@ -121,8 +133,17 @@ export class FireThingLayerService {
     return resArray;
   }
 
-  public getAllAt(type: FireThingEnum, coordinate: Coordinate): FireCar[] | FireStation[] | FirePoint[] {
-    const features: Feature[] = this.getAllFeatureAt(type, coordinate);
+  public getAllFireCarAt(pixel: Pixel): FireCar[] {
+    return <FireCar[] > this.getAllAt(FireThingEnum.FireCar, pixel);
+  }
+  public getAllFireStationAt(pixel: Pixel): FireStation[] {
+    return <FireStation[] > this.getAllAt(FireThingEnum.FireStation, pixel);
+  }
+  public getAllFirePointAt(pixel: Pixel): FirePoint[] {
+    return <FirePoint[] > this.getAllAt(FireThingEnum.FirePoint, pixel);
+  }
+  private getAllAt(type: FireThingEnum, pixel: Pixel): FireCar[] | FireStation[] | FirePoint[] {
+    const features: Feature[] = this.getAllFeatureAt(type, pixel);
     let resArray: FireCar[] | FireStation[] | FirePoint[] = [];
     features.forEach((feature: Feature) => {
       resArray.push(feature.get("data"));
@@ -130,8 +151,17 @@ export class FireThingLayerService {
     return resArray;
   }
 
-  public getOneAt(type: FireThingEnum, coordinate: Coordinate): FireCar | FireStation | FirePoint {
-    const fireThingArray: FireCar[] | FireStation[] | FirePoint[] = this.getAllAt(type, coordinate);
+  public getOneFireCarAt(pixel: Pixel): FireCar {
+    return <FireCar > this.getOneAt(FireThingEnum.FireCar, pixel);
+  }
+  public getOneFireStationAt(pixel: Pixel): FireStation {
+    return <FireStation > this.getOneAt(FireThingEnum.FireStation, pixel);
+  }
+  public getOneFirePointAt(pixel: Pixel): FirePoint {
+    return <FirePoint > this.getOneAt(FireThingEnum.FirePoint, pixel);
+  }
+  private getOneAt(type: FireThingEnum, pixel: Pixel): FireCar | FireStation | FirePoint {
+    const fireThingArray: FireCar[] | FireStation[] | FirePoint[] = this.getAllAt(type, pixel);
     let res: FireCar | FireStation | FirePoint;
     if (fireThingArray.length > 0) {
       res = fireThingArray[0];
@@ -139,20 +169,32 @@ export class FireThingLayerService {
     return res;
   }
 
-  public removeAllAt(type: FireThingEnum, coordinate: Coordinate) {
-    let features: Feature[] = this.getAllFeatureAt(type, coordinate);
+  public removeAllAt(type: FireThingEnum, pixel: Pixel) {
+    let features: Feature[] = this.getAllFeatureAt(type, pixel);
     features.forEach(feature => {
       this.fireThingSource.removeFeature(feature);
     });
   }
 
+  public removeFeature(feature: Feature) {
+    this.fireThingSource.removeFeature(feature);
+  }
+
   public setVisibility(fireThing: FireCar | FirePoint | FireStation, visibility: boolean) {
     const type: FireThingEnum = this.getType(fireThing);
-    if(!!type){
-        let features: Feature[] = this.getAllFeature(type);
-        features.forEach(feature => {
-          feature.set('visibility', visibility);
-        });
+    if (!!type) {
+      let features: Feature[] = this.getAllFeature(type);
+      features.forEach(feature => {
+        feature.set('visibility', visibility);
+      });
     }
+  }
+
+  public getFireThingLayer(): VectorLayer {
+    return this.fireThingLayer;
+  }
+
+  public static getDataFromFeature(feature: Feature): FireCar | FirePoint | FireStation {
+    return feature.get('data');
   }
 }
