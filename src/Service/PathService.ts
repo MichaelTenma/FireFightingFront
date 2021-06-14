@@ -16,11 +16,6 @@ import {
 } from '../BasicOpenlayerType';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import LineString from 'ol/geom/LineString';
-import Polyline from 'ol/format/Polyline';
-import {
-  HttpClient
-} from '@angular/common/http';
 import {
   Injectable
 } from '@angular/core';
@@ -37,7 +32,10 @@ import {
   Stroke
 } from 'ol/style';
 import GeoJSON from 'ol/format/GeoJSON';
+import {HttpService} from './HttpService';
+import WKT from 'ol/format/WKT';
 
+const wktFormat = new WKT();
 @Injectable({
   providedIn: 'root',
 })
@@ -48,7 +46,7 @@ export class PathService {
   constructor(
     private gameTimeService: GameTimeService,
     private fireThingLayerService: FireThingLayerService,
-    private httpClient: HttpClient
+    private httpService: HttpService
   ) {
     this.pathList = [];
     this.routeSource = new VectorSource();
@@ -56,8 +54,8 @@ export class PathService {
       source: this.routeSource,
       style: new Style({
         stroke: new Stroke({
-          width: 6,
-          color: [237, 212, 0, 0.8],
+          width: 7,
+          color: [28, 248, 28, 1.00],
         }),
       })
     });
@@ -111,23 +109,43 @@ export class PathService {
   //   return new Path([res], from, to, fireCars[0]);
   // }
 
-  public async requestAPath(from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCars: FireCar[]): Promise < Path > {
-    let geoJsonFormat: GeoJSON = new GeoJSON();
-    let res = await new Promise < Feature[] > ((resolve) => {
-      this.httpClient.get('./assets/path.json')
-        .subscribe((response) => {
-          let fetures: Feature[] = geoJsonFormat.readFeatures(response, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
-          });
+  public async requestAPath(fromPoint: Coordinate, toPoint: Coordinate, from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCars: FireCar[]): Promise < Path > {
+    // let geoJsonFormat: GeoJSON = new GeoJSON();
+    // let res = await new Promise < Feature[] > ((resolve) => {
+    //   // this.httpClient.get('./assets/path.json')
+    //   this.httpClient.get('http://localhost:8080/route/getKBestRoute')
+    //     .subscribe((response) => {
+    //       let fetures: Feature[] = geoJsonFormat.readFeatures(response, {
+    //         dataProjection: 'EPSG:4326',
+    //         featureProjection: 'EPSG:3857'
+    //       });
 
-          resolve(fetures);
-        });
-    })
-    console.log(res);
-    this.routeSource.addFeatures(res);
+    //       resolve(fetures);
+    //     });
+    // })
+    // console.log(res);
+    // this.routeSource.addFeatures(res);
     
-    return new Path(res, from, to, fireCars[0]);
+    // return new Path(res, from, to, fireCars[0]);
+
+    let data = await this.httpService.getFromEnd(`/route/getBestRoute?x1=${fromPoint[0]}&y1=${fromPoint[1]}&x2=${toPoint[0]}&y2=${toPoint[1]}&srid=3857`);
+    let routeFeatures: Feature[] = [];
+    data.route.forEach(e => {
+      // e.segment
+      let routeFeature: Feature = wktFormat.readFeature(e.segment, {
+        dataProjection: 'EPSG:3857',
+        featureProjection: 'EPSG:3857'
+      });
+
+      let speed: number = e.speed;
+      let cost: number = e.cost;
+      routeFeature.set("speed", speed);
+      routeFeature.set("cost", cost);
+      routeFeatures.push(routeFeature);
+    })
+    console.log({routeFeatures});
+    this.routeSource.addFeatures(routeFeatures);
+    return new Path(routeFeatures, from, to, fireCars[0]);
   }
 
   public registerPath(path: Path) {

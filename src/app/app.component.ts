@@ -51,7 +51,10 @@ import {
 
 import { Coordinate, Pixel } from '../BasicOpenlayerType';
 import { PathService } from '../Service/PathService';
+import { ServiceAreaService } from '../Service/ServiceAreaService';
 
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -68,7 +71,8 @@ export class AppComponent implements AfterViewInit {
     private fireService: FireService,
     private fireThingLayerService: FireThingLayerService,
     private statusService: StatusService,
-    private pathService: PathService
+    private pathService: PathService,
+    private serviceAreaService: ServiceAreaService
   ) {}
 
   scale(factor: number) {
@@ -104,9 +108,9 @@ export class AppComponent implements AfterViewInit {
   async init() {
     this.fireThingLayerService.setMap(this.map);
     /* 没有进行深克隆 */
+    this.map.addLayer(this.serviceAreaService.getServiceAreaLayer());
     this.map.addLayer(this.pathService.getRouterLayer());
     this.map.addLayer(this.fireThingLayerService.getFireThingLayer());
-
 
     // 监听singleclick事件
     this.map.on('singleclick', async (event: any) => {
@@ -126,6 +130,7 @@ export class AppComponent implements AfterViewInit {
           let fireStation: FireStation = this.fireThingLayerService.getOneFireStationAt(pixel);
           this.购置消防车(coordinate, fireThing, fireStation);
         } else if (fireThing.getName() === "消防站点") {
+          this.serviceAreaService.calServiceArea(coordinate);
           this.建设消防站点(coordinate, fireThing);
         }
       } else {
@@ -135,8 +140,11 @@ export class AppComponent implements AfterViewInit {
           let fireStation: FireStation = this.fireThingLayerService.getOneFireStationAt(pixel);
           if (!!fireStation) {
             /* 如果附近有多个消防站点，选择最近的一个消防站点 */
+            /* 展示该站点的服务区 */
+            this.serviceAreaService.calServiceArea(coordinate);
             this.showingFireStation = fireStation;
           } else {
+            this.serviceAreaService.removeServiceArea();
             this.showingFireStation = null;
           }
         } {
@@ -205,18 +213,26 @@ export class AppComponent implements AfterViewInit {
 
   private selectTargetFirePointForSaveFire: boolean = false;
   saveFire(event: SaveFireOuterResult) {
+    let startFeature: Feature = this.fireThingLayerService.getFeatureBy(event.fireStation);
+    let startPoint: Coordinate = startFeature.getGeometry().getFirstCoordinate();
+
     /* 提示用户选择一个火苗 */
     alert("请单击选择一个火灾点");
     // 监听singleclick事件
     let fn: Function = async (fnEvent: any) => {
+      // let endPoint = fnEvent.coordinate;
+      /* 3857 */
+      let endPoint: Coordinate = fnEvent.coordinate;
+
       let pixel: Pixel = fnEvent.pixel;
       let firePoint: FirePoint = this.fireThingLayerService.getOneFirePointAt(pixel);
       if (!!firePoint) {
         /* add to PathService */
         let fireCars: FireCar[] = event.fireStation.saveFire(event.selectFireCarNum);
         this.pathService.registerPath(await this.pathService.requestAPath(
-          event.fireStation, firePoint, fireCars
+          startPoint, endPoint, event.fireStation, firePoint, fireCars
         ));
+        
         firePoint.addSaveFirePower(fireCars);
         this.showingFirePoint = firePoint;
         alert("消防车已经出发");

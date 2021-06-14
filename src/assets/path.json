@@ -21,6 +21,12 @@
           24.5271348225978
         ]
       ]
+    },
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:4326"
+      }
     }
   }, {
     "type": "Feature",
@@ -43,6 +49,12 @@
           30.031055426540206
         ]
       ]
+    },
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:4326"
+      }
     }
   }, {
     "type": "Feature",
@@ -65,6 +77,12 @@
           29.726222319395504
         ]
       ]
+    },
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:4326"
+      }
     }
   }, {
     "type": "Feature",
@@ -83,6 +101,12 @@
           30.789036751261136
         ]
       ]
+    },
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:4326"
+      }
     }
   }]
 }

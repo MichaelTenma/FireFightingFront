@@ -112,9 +112,9 @@ export class FireService {
           let fireTime_ms: number = this.gameTimeService.getGameTime().valueOf() + randomFireSecond * 1000;
           let fireTime: Date = new Date(fireTime_ms);
 
-          let randomLon = Math.random() * 3 - 1.5;
-          let randomLat = Math.random() * 3 - 1.5;
-          let coordinate = fromLonLat([113.333333 + randomLon, 23.333333 + randomLat]);
+          let randomLon = Math.random() * 0.1 - 0.05;
+          let randomLat = Math.random() * 0.1 - 0.05;
+          let coordinate = fromLonLat([113.280637 + randomLon, 23.125178 + randomLat]);
           // console.log({randomFireLevel, randomFireSecond});
 
           //   randomFireLevel = 0;
@@ -122,9 +122,9 @@ export class FireService {
             /* 向地图中加入火灾，计算火灾位置 */
             let firePoint: FirePoint = new FirePoint(randomFireLevel, fireTime, this.statusService);
             /* test */
-            let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
-            firePoint.addSaveFirePower([fireCar]);
-            this.fireThingLayerService.add(fireCar, coordinate);
+            // let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
+            // firePoint.addSaveFirePower([fireCar]);
+            // this.fireThingLayerService.add(fireCar, coordinate);
             
             let firePoinrFeature: Feature = this.fireThingLayerService.add(firePoint, coordinate);
             this.firePointFeatureList.push(firePoinrFeature);
