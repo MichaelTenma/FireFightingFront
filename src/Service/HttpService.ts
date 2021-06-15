@@ -28,4 +28,13 @@ export class HttpService {
         });
     });
   }
+
+  public get(url: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        this.httpClient.get(url)
+        .subscribe((response: any) => {
+          resolve(response);
+        });
+    });
+  }
 }

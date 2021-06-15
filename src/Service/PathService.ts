@@ -36,6 +36,9 @@ import {HttpService} from './HttpService';
 import WKT from 'ol/format/WKT';
 
 import {TimeUtil} from '../TimeUtil';
+import {RecordService} from './RecordService';
+import { StatisticFactorEnum } from '../StatisticFactorEnum';
+import { FireThingEnum } from 'src/FireThingEnum';
 
 const wktFormat = new WKT();
 @Injectable({
@@ -48,7 +51,8 @@ export class PathService {
   constructor(
     private gameTimeService: GameTimeService,
     private fireThingLayerService: FireThingLayerService,
-    private httpService: HttpService
+    private httpService: HttpService,
+    private recordService: RecordService
   ) {
     this.pathList = [];
     this.routeSource = new VectorSource();
@@ -74,12 +78,8 @@ export class PathService {
         let currentTime: Date = this.gameTimeService.getGameTime();
         let coordinate: Coordinate = path.getCoordinateAt(currentTime.valueOf());
         if (!coordinate) {
-          /* 无路可走了 */
-          console.log("无路可走");
-
-          path.inFireCar();
-
-          path.removePath();
+          /* 无路可走了，到达目的地 */
+          PathService.achieveTheDestination(this.recordService, path, currentTime);
           this.fireThingLayerService.setVisibility(fireCarFeature, false);
           this.pathList.splice(i, 1); // 将使后面的元素依次前移，数组长度减1
           i--; // 如果不减，将漏掉一个元素
@@ -89,52 +89,17 @@ export class PathService {
           fireCarFeature.setGeometry(currentPoint);
         }
       }
-
-      // this.pathList.forEach(path => {
-      //   let fireCar = path.getFireCar();
-      //   let fireCarFeature: Feature = this.fireThingLayerService.getFeatureBy(fireCar);
-      //   let currentTime: Date = this.gameTimeService.getGameTime();
-      //   let coordinate: Coordinate = path.getCoordinateAt(currentTime.valueOf());
-      //   if (!coordinate) {
-      //     /* 无路可走了 */
-      //     // console.log("无路可走");
-      //     path.removePath();
-      //     this.fireThingLayerService.setVisibility(fireCarFeature, false);
-      //   } else {
-      //     this.fireThingLayerService.setVisibility(fireCarFeature, true);
-      //     let currentPoint: Point = new Point(coordinate);
-      //     fireCarFeature.setGeometry(currentPoint);
-      //   }
-      //   // this.fireThingLayerService.renderMap();
-      // })
     }, 5, true);
   }
 
-  // public async requestAPath(from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCars: FireCar[]): Promise < Path > {
-  //   let res = await new Promise < Feature > ((resolve) => {
-  //     this.httpClient.get('https://openlayers.org/en/latest/examples/data/polyline/route.json')
-  //       .subscribe((response: any) => {
-  //         var polyline = response.routes[0].geometry;
-  //         var route = new Polyline({
-  //           factor: 1e6
-  //         }).readGeometry(polyline, {
-  //           dataProjection: 'EPSG:4326',
-  //           featureProjection: 'EPSG:3857',
-  //         });
-
-  //         var routeFeature = new Feature({
-  //           type: 'route',
-  //           geometry: route,
-  //         });
-  //         routeFeature.set("speed", 36);
-  //         resolve(routeFeature);
-  //       });
-  //   })
-  //   console.log(res);
-  //   this.routeSource.addFeature(res);
-    
-  //   return new Path([res], from, to, fireCars[0]);
-  // }
+  private static achieveTheDestination(recordService: RecordService, path: Path, currentTime: Date){
+    path.inFireCar();
+    path.removePath();
+    if(path.isToType() === FireThingEnum.FirePoint){
+      /* 前往灭火的路径时间 */
+      recordService.addRecord(StatisticFactorEnum.消防车到达时间, path.getTotalRunSecond(currentTime));
+    }
+  }
 
   public async requestPath(
     fromPoint: Coordinate, toPoint: Coordinate, 
@@ -156,7 +121,7 @@ export class PathService {
       routeFeature.set("cost", cost);
       routeFeatures.push(routeFeature);
     })
-    console.log({routeFeatures});
+    // console.log({routeFeatures});
     // this.routeSource.addFeatures(routeFeatures);
 
     let routes: Route[] = Path.transformFeaturesToRoutes(routeFeatures);

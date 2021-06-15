@@ -42,7 +42,7 @@ export class ServiceAreaService {
   public async calServiceArea(
     fireStationPoint: Coordinate
   ): Promise<void> {
-    let second: number = 600;
+    let second: number = 5 * 60;
     let data = await this.httpService.getFromEnd(`/route/generateServiceAreaBySecond?x1=${fireStationPoint[0]}&y1=${fireStationPoint[1]}&srid=3857&serviceTimeInSecond=${second}`);
     let serviceArea: Feature = wktFormat.readFeature(data, {
       dataProjection: 'EPSG:3857',

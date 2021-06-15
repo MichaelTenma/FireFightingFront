@@ -4,6 +4,10 @@ import { FireCar } from './FireCar';
 import { FireCarScheduleInterface } from './FireCarScheduleInterface';
 import { Coordinate } from '../BasicOpenlayerType';
 import VectorSource from 'ol/source/Vector';
+import { FireThingEnum } from 'src/FireThingEnum';
+import { FireThingLayerService } from 'src/Service/FireThingLayerService';
+import { FireStation } from './FireStation';
+import { FirePoint } from './FirePoint';
 export class Route{
     private readonly route: LineString;
     private readonly kmph: number;/* km/h */
@@ -176,4 +180,24 @@ export class Path{
     public getFireCar() : FireCar {
         return this.fireCar;
     }
+
+    public getTotalRunSecond(currentTime: Date): number{
+        return (currentTime.getTime() - this.startTime) / 1000.0;
+    }
+
+    public isToType(): FireThingEnum{
+        let fireThing = this.to;
+        
+        let type: FireThingEnum;
+        if (fireThing instanceof FireCar) {
+          type = FireThingEnum.FireCar;
+        } else if (fireThing instanceof FireStation) {
+          type = FireThingEnum.FireStation;
+        } else if (fireThing instanceof FirePoint) {
+          type = FireThingEnum.FirePoint;
+        } else {
+          type = null;
+        }
+        return type;
+    } 
 }

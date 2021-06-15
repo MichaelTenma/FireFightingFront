@@ -73,7 +73,7 @@ export class FireThingLayerService {
     return styles[type];
   }
 
-  private getType(fireThing: FireCar | FireStation | FirePoint): FireThingEnum {
+  public static getType(fireThing: FireCar | FireStation | FirePoint): FireThingEnum {
     let type: FireThingEnum;
     if (fireThing instanceof FireCar) {
       /* 消防车默认情况下是不可见的，因为一开始就被加到某一消防站中 */
@@ -94,7 +94,7 @@ export class FireThingLayerService {
 
   public add(data: FireCar | FireStation | FirePoint, coordinate: Coordinate): Feature {
     let point: Point = new Point(coordinate);
-    let type: FireThingEnum = this.getType(data);
+    let type: FireThingEnum = FireThingLayerService.getType(data);
 
     let visibility: boolean = true;
     if (type === FireThingEnum.FireCar) {
@@ -192,7 +192,7 @@ export class FireThingLayerService {
 
   public getFeatureBy(fireThing: FireCar | FirePoint | FireStation) : Feature{
     let resFeature: Feature;
-    let features: Feature[] = this.getAllFeature(this.getType(fireThing));
+    let features: Feature[] = this.getAllFeature(FireThingLayerService.getType(fireThing));
     for(let i = 0;i < features.length;i++){
       if(fireThing === FireThingLayerService.getDataFromFeature(features[i])){
         resFeature = features[i];

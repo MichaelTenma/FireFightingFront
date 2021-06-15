@@ -13,6 +13,7 @@ import {
 } from './FireCarScheduleInterface';
 
 export class FirePoint implements FireCarScheduleInterface {
+  private readonly name: string;
   private changedFireLevel: number; /* 灭火力量改变后火势 */
   private changedFireTime: Date; /* 灭火力量改变时间 */
   private saveFirePower: FireCar[]; /* 灭火力量 */
@@ -25,9 +26,10 @@ export class FirePoint implements FireCarScheduleInterface {
   private readonly fireOriginalTime: Date; /* 起火时间 */
 
   constructor(
-    起火规模: number, 起火时间: Date,
+    name: string, 起火规模: number, 起火时间: Date,
     private statusService: StatusService
   ) {
+    this.name = name;
     this.fireOriginalLevel = 起火规模;
     this.fireOriginalTime = 起火时间;
     this.changedFireLevel = this.fireOriginalLevel;
@@ -45,6 +47,7 @@ export class FirePoint implements FireCarScheduleInterface {
   }
 
   public outAllFireCars(): FireCar[]{
+    /* 是否有必要 */
     let fireCars: FireCar[] = [];
     this.saveFirePower.forEach(fireCar => fireCars.push(fireCar));
     return this.outFireCars(fireCars);
@@ -83,6 +86,7 @@ export class FirePoint implements FireCarScheduleInterface {
     this.saveFirePowerChange();
 
     /* 最后才减少灭火力量 */
+    /* 注意fireCarArray有可能与this.saveFirePower是同一个内存空间 */
     let hasFireCarArray: FireCar[] = [];
     let deleteElementIndex: number[] = [];
     fireCarArray.forEach(fireCar => {
@@ -167,5 +171,13 @@ export class FirePoint implements FireCarScheduleInterface {
 
   public getNeedSecond(): number {
     return this.needSecond;
+  }
+
+  public getTotalFireSecond(currentTime: Date): number{
+    return (currentTime.getTime() - this.fireOriginalTime.getTime()) / 1000.0;
+  }
+
+  public getName(): string{
+    return this.name;
   }
 }

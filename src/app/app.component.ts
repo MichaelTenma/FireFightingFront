@@ -52,9 +52,12 @@ import {
 import { Coordinate, Pixel } from '../BasicOpenlayerType';
 import { PathService } from '../Service/PathService';
 import { ServiceAreaService } from '../Service/ServiceAreaService';
-
+import { NameService } from '../Service/NameService';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
+import { transform as proj_transform, get as proj_get, fromLonLat } from 'ol/proj';
+import { FireThingEnum } from 'src/FireThingEnum';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -72,19 +75,15 @@ export class AppComponent implements AfterViewInit {
     private fireThingLayerService: FireThingLayerService,
     private statusService: StatusService,
     private pathService: PathService,
-    private serviceAreaService: ServiceAreaService
+    private serviceAreaService: ServiceAreaService,
+    private nameService: NameService
   ) {}
-
-  scale(factor: number) {
-    this.gameTimeService.setGameTimeScale(factor);
-  }
-
 
   ngAfterViewInit(): void {
     this.map = new Map({
       view: new View({
-        center: [0, 0],
-        zoom: 2,
+        center: fromLonLat([113.280637, 23.125178]),
+        zoom: 12,
       }),
       layers: [
         new TileLayer({
@@ -128,7 +127,7 @@ export class AppComponent implements AfterViewInit {
           /* 搜寻点击点附近有没有消防站点，如果没有消防站点则提示请在一个消防站点附近添加消防车 */
           /* 如果附近有多个消防站点，选择最近的一个消防站点 */
           let fireStation: FireStation = this.fireThingLayerService.getOneFireStationAt(pixel);
-          this.购置消防车(coordinate, fireThing, fireStation);
+          this.购置消防车(fireThing, fireStation);
         } else if (fireThing.getName() === "消防站点") {
           this.serviceAreaService.calServiceArea(coordinate);
           this.建设消防站点(coordinate, fireThing);
@@ -162,13 +161,16 @@ export class AppComponent implements AfterViewInit {
     this.fire();
   }
 
-  async 购置消防车(coordinate: Coordinate, fireThing: FireThing, refFireStation: FireStation) {
+  async 购置消防车(fireThing: FireThing, refFireStation: FireStation) {
     if (!!refFireStation) {
-      console.log(refFireStation.getName());
+      // console.log(refFireStation.getName());
       /* 判断用户还有没有钱买消防车 */
       if (this.statusService.buyFireThing(fireThing)) {
         /* 有钱买 */
-        let fireCar: FireCar = new FireCar(UUID.uuid(), "消防车", refFireStation);
+        let coordinate: Coordinate = this.fireThingLayerService.getFeatureBy(refFireStation).getGeometry().getFirstCoordinate();
+        let name: string = await this.nameService.name(proj_transform(coordinate, "EPSG:3857", "EPSG:4326"), FireThingEnum.FireCar);
+
+        let fireCar: FireCar = new FireCar(UUID.uuid(), name, refFireStation);
         this.fireThingLayerService.add(fireCar, coordinate);
 
         refFireStation.addFireCar([fireCar]);
@@ -179,13 +181,14 @@ export class AppComponent implements AfterViewInit {
     }
   }
 
-  建设消防站点(coordinate: Coordinate, fireThing: FireThing) {
+  async 建设消防站点(coordinate: Coordinate, fireThing: FireThing) {
     /* 创建消防站点类 */
 
     /* 判断用户还有没有钱买消防车 */
     if (this.statusService.buyFireThing(fireThing)) {
 
-      let fireStation: FireStation = new FireStation("消防站" + UUID.uuid());
+      let name: string = await this.nameService.name(proj_transform(coordinate, "EPSG:3857", "EPSG:4326"), FireThingEnum.FireStation);
+      let fireStation: FireStation = new FireStation(name);
       this.fireThingLayerService.add(fireStation, coordinate);
 
       this.showingFireStation = fireStation;
@@ -222,14 +225,14 @@ export class AppComponent implements AfterViewInit {
     let fn: Function = async (fnEvent: any) => {
       // let endPoint = fnEvent.coordinate;
       /* 3857 */
-      let endPoint: Coordinate = fnEvent.coordinate;
-
       let pixel: Pixel = fnEvent.pixel;
       let firePoint: FirePoint = this.fireThingLayerService.getOneFirePointAt(pixel);
+      let firePointFeature: Feature = this.fireThingLayerService.getFeatureBy(firePoint);
+      let endPoint: Coordinate = firePointFeature.getGeometry().getFirstCoordinate();
       if (!!firePoint) {
         /* add to PathService */
         let fireCars: FireCar[] = event.fireStation.saveFire(event.selectFireCarNum);
-        console.log({fireCars});
+        // console.log({fireCars});
         this.pathService.registerPath(await this.pathService.requestPath(
           startPoint, endPoint, event.fireStation, firePoint, fireCars
         ));

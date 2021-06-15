@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FireThing } from 'src/FireThing';
+import { GameTimeService } from 'src/Service/GameTimeService';
 import { FireThingService } from '../../Service/FireThingService';
 import { StatusService } from '../../Service/StatusService';
 
@@ -8,16 +9,20 @@ import { StatusService } from '../../Service/StatusService';
   templateUrl: './construction.component.html',
   styleUrls: ['./construction.component.css']
 })
-export class ConstructionComponent implements OnInit {
+export class ConstructionComponent implements OnInit  {
   fireThingService : FireThingService;
   private statusService : StatusService;
+  gameTimeScale: number;
+  gameTimeService: GameTimeService;
 
   constructor(
     fireThingService : FireThingService,
-    statusService : StatusService
+    statusService : StatusService,
+    gameTimeService: GameTimeService
   ) { 
     this.fireThingService = fireThingService;
     this.statusService = statusService;
+    this.gameTimeService = gameTimeService;
   }
 
   ngOnInit(): void {
@@ -41,4 +46,9 @@ export class ConstructionComponent implements OnInit {
   getUserMoney() : number{
     return this.statusService.getUserMoney();
   }
+
+  scale(factor: number) {
+    this.gameTimeService.setGameTimeScale(factor);
+  }
+
 }

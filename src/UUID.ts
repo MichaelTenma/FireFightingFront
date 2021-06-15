@@ -1,7 +1,7 @@
 
 export class UUID {
    
-    public static uuid() : String{
+    public static uuid() : string{
         var s = [];
         var hexDigits = "0123456789abcdef";
         for (var i = 0; i < 36; i++) {
@@ -13,5 +13,11 @@ export class UUID {
     
         var uuid = s.join("");
         return uuid;
+    }
+
+    public static subUUID(bits: number): string{
+        let uuidStr: string = this.uuid();
+        uuidStr = uuidStr.replace("-", "");
+        return uuidStr.substring(0, bits);
     }
 }

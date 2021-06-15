@@ -22,6 +22,4 @@ export class FirePointInformationComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
-
 }

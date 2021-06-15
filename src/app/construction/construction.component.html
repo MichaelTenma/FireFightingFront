@@ -11,8 +11,16 @@
       <span>{{ ele.getMoney() | rmbFormat }}</span>
     </div>
   </div>
-  <div style="display: flex; flex-direction: row-reverse;">
-    <button mat-flat-button color="warn">发生火灾</button>
+  <div style="display: flex;margin-top: 10px;">
+    <span style="width: 100%">{{ gameTimeService.getGameTime() }}</span>
   </div>
+  <div style="display: flex; flex-direction: row;justify-content: space-between;margin-top: 6px;">
+    <button mat-flat-button color="accent" (click)="scale(0)">0x</button>
+    <button mat-flat-button color="accent" (click)="scale(1)">1x</button>
+    <button mat-flat-button color="accent" (click)="scale(10)">10x</button>
+    <button mat-flat-button color="accent" (click)="scale(100)">100x</button>
+    <button mat-flat-button color="accent" (click)="scale(1000)">1000x</button>
+  </div>
+
 
 </div>

@@ -1,6 +1,6 @@
 <div class="container" *ngIf="!!firePoint">
     <h1>火灾点</h1>
-    <span>1号火灾点</span>
+    <span>{{firePoint.getName()}}</span>
     <h3 style="margin-top: 16px;font-weight: bold;">灭火力量</h3>
     <div class="bodyContainer">
       <!-- <div class="construction-item">
@@ -9,7 +9,7 @@
       </div> -->
       <span>灭火力量：消防车 {{ firePoint.getNumOfFireCar() }} 台</span><br/>
       <span>火灾规模：{{ firePoint.getCurrentFireLevel() }}</span><br/>
-      <span>预测扑灭时间： {{ firePoint.getNeedSecond() }}秒</span>
+      <span>预测扑灭时间： {{ (firePoint.getNeedSecond() / 60).toFixed(2) }} 分钟</span>
     </div>
   </div>
   

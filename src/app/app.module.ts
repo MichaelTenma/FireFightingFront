@@ -33,17 +33,33 @@ import {
 } from './Pipe/RMBFormat.pipe';
 
 import {
+  MatSelectModule
+} from '@angular/material/select';
+import {
   NgbPaginationModule,
   NgbAlertModule,
   NgbModule
 } from '@ng-bootstrap/ng-bootstrap';
-import { FireStationInformationComponent } from './fireStationInformation/fireStationInformation.component';
+import {
+  FireStationInformationComponent
+} from './fireStationInformation/fireStationInformation.component';
 
-import {MatButtonModule} from '@angular/material/button';
-import { FirePointInformationComponent } from './fire-point-information/fire-point-information.component';
-import {MatSliderModule} from '@angular/material/slider';
-import { HttpClientModule } from '@angular/common/http';
-
+import {
+  MatButtonModule
+} from '@angular/material/button';
+import {
+  FirePointInformationComponent
+} from './fire-point-information/fire-point-information.component';
+import {
+  MatSliderModule
+} from '@angular/material/slider';
+import {
+  HttpClientModule
+} from '@angular/common/http';
+import {
+  StatisticComponent
+} from './statistic/statistic.component';
+import {MatListModule} from '@angular/material/list';
 @NgModule({
   declarations: [
     AppComponent,
@@ -53,13 +69,14 @@ import { HttpClientModule } from '@angular/common/http';
     // FireStationPopupComponent,
     FireStationInformationComponent,
     FirePointInformationComponent,
+    StatisticComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatTabsModule,MatButtonModule,MatSliderModule,
-    NgbPaginationModule, NgbAlertModule, NgbModule,HttpClientModule
+    MatTabsModule, MatButtonModule, MatSliderModule, MatSelectModule,MatListModule,
+    NgbPaginationModule, NgbAlertModule, NgbModule, HttpClientModule
   ],
   // providers: [RMBFormatPipe],
   bootstrap: [AppComponent]

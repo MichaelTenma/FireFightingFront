@@ -1,0 +1,13 @@
+<div style="padding-top: 6px;">
+    <mat-form-field appearance="fill">
+        <mat-label>Choose an option</mat-label>
+        <mat-select>
+          <mat-option *ngFor="let factor of getStatisticFactorList()" [value]="factor" (click)="statistic(factor)">{{ factor }}</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <mat-selection-list #shoes [multiple]="false">
+        <mat-list-option *ngFor="let statisticResult of statisticResultList">
+          {{statisticResult.name}}:  {{ (statisticResult.result / 60).toFixed(2) }} 分钟
+        </mat-list-option>
+    </mat-selection-list>
+</div>

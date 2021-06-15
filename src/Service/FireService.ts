@@ -18,9 +18,6 @@ import {
 } from '../Entity/FirePoint';
 import Feature from 'ol/Feature';
 import {
-  fromLonLat
-} from 'ol/proj';
-import {
   FireCar
 } from '../Entity/FireCar';
 import {
@@ -29,6 +26,11 @@ import {
 import { PathService } from './PathService';
 import { Coordinate } from 'src/BasicOpenlayerType';
 import { FireStation } from 'src/Entity/FireStation';
+import { RecordService } from './RecordService';
+import { StatisticFactorEnum } from 'src/StatisticFactorEnum';
+import { transform as proj_transform, fromLonLat } from 'ol/proj';
+import { NameService } from './NameService';
+import { FireThingEnum } from 'src/FireThingEnum';
 
 @Injectable({
   providedIn: 'root',
@@ -40,7 +42,9 @@ export class FireService {
     private gameTimeService: GameTimeService,
     private statusService: StatusService,
     private fireThingLayerService: FireThingLayerService,
-    private pathService: PathService
+    private pathService: PathService,
+    private recordService: RecordService,
+    private nameService: NameService,
   ) {
     this.firePointFeatureList = new Array < Feature > ();
   }
@@ -80,7 +84,7 @@ export class FireService {
   /**
    * 更新火灾点的火势
    */
-  public updateFirePoint(whenFireDone: Function) {
+  public updateFirePoint(whenFireDone: (firePoint: FirePoint) => void) {
     this.gameTimeService.registerTask(() => {
       this.firePointFeatureList.forEach(e => {
         let firePoint: FirePoint = e.get("data");
@@ -93,15 +97,30 @@ export class FireService {
         let e: Feature = this.firePointFeatureList[i];
         let firePoint: FirePoint = < FirePoint > FireThingLayerService.getDataFromFeature(e);
         if (firePoint.getCurrentFireLevel() <= 0) {/* 火灾结束 */
-          this.fireThingLayerService.removeFeature(e);
           whenFireDone(firePoint);
-          FireService.backFireCars(this.pathService, this.fireThingLayerService, e);
+          FireService.fireOver(
+            this.pathService, this.fireThingLayerService, this.statusService, this.recordService, e, 
+            firePoint, this.gameTimeService.getGameTime()
+          );
           /* 是否能令firePoint指向的内存设置为null, 即将其销毁 */
           this.firePointFeatureList.splice(i, 1); // 将使后面的元素依次前移，数组长度减1
           i--; // 如果不减，将漏掉一个元素
         }
       }
     }, 2, true);
+  }
+
+  private static fireOver(
+    pathService: PathService, fireThingLayerService: FireThingLayerService, statusService: StatusService,
+    recordService: RecordService, firePointFeature: Feature, firePoint: FirePoint,
+    currentTime: Date
+  ){
+    fireThingLayerService.removeFeature(firePointFeature);
+    FireService.backFireCars(pathService, fireThingLayerService, firePointFeature);
+    let fireTimeSecond = firePoint.getTotalFireSecond(currentTime);
+    recordService.addRecord(StatisticFactorEnum.扑灭火灾时间, fireTimeSecond);
+
+    statusService.saveAFire(fireTimeSecond);
   }
 
   private static backFireCars(
@@ -124,9 +143,9 @@ export class FireService {
   public randomFire() {
     return new Task(
       10,
-      () => {
-        if (Math.random() < 0.02) {
-          /* 2%的概率发生火灾 */
+      async () => {
+        if (Math.random() < 0.015) {
+          /* 1.5%的概率发生火灾 */
           // console.log("随机生成一次火灾");
           let randomFireLevel = FireService.randomFireLevel();
           let randomFireSecond = Math.random() * 120; /* 随机生成一个两分钟内发生的火灾 */
@@ -136,12 +155,13 @@ export class FireService {
           let randomLon = Math.random() * 0.1 - 0.05;
           let randomLat = Math.random() * 0.1 - 0.05;
           let coordinate = fromLonLat([113.280637 + randomLon, 23.125178 + randomLat]);
+          let name: string = await this.nameService.name(proj_transform(coordinate, "EPSG:3857", "EPSG:4326"), FireThingEnum.FirePoint);
           // console.log({randomFireLevel, randomFireSecond});
 
           //   randomFireLevel = 0;
           this.gameTimeService.registerTask(() => {
             /* 向地图中加入火灾，计算火灾位置 */
-            let firePoint: FirePoint = new FirePoint(randomFireLevel, fireTime, this.statusService);
+            let firePoint: FirePoint = new FirePoint(name, randomFireLevel, fireTime, this.statusService);
             /* test */
             // let fireCar: FireCar = new FireCar(UUID.uuid(), '消防车', null);
             // firePoint.addSaveFirePower([fireCar]);

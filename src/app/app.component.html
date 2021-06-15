@@ -5,16 +5,10 @@
       <mat-tab label="建设">
         <app-construction></app-construction>
       </mat-tab>
-      <mat-tab label="统计">Content 2</mat-tab>
+      <mat-tab label="统计">
+        <app-statistic></app-statistic>
+      </mat-tab>
     </mat-tab-group>
-    <button (click)="scale(0)">scale 0</button>
-    <button (click)="scale(1/2)">scale 0.5</button>
-    <button (click)="scale(1)">scale 1</button>
-    <button (click)="scale(2)">scale 2</button>
-    <button (click)="scale(10)">scale 10</button>
-    <button (click)="scale(100)">scale 100</button>
-    <button (click)="scale(1000)">scale 1000</button>
-    <!-- <button (click)="fire()">生成火灾</button> -->
   </div>
 
   <app-firestation-information *ngIf="!!showingFireStation" class="information" [fireStation] = "showingFireStation" (saveFireOuter)="saveFire($event)"></app-firestation-information>

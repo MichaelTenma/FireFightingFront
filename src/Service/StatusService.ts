@@ -12,14 +12,13 @@ import { GameTimeService } from './GameTimeService';
 })
 export class StatusService {
   private constructFireThing: FireThing;
-
   private userMoney: number; /* 用户剩余的资金 */
 
   constructor(
     private gameTimeService: GameTimeService
   ) {
     this.constructFireThing = null;
-    this.userMoney = 15000 * 10000; /* 一千五百万元人民币 */
+    this.userMoney = 5000 * 10000; /* 五千万元人民币 */
   }
 
   public getGameTime(): Date {
@@ -58,5 +57,11 @@ export class StatusService {
 
   public getUserMoney(): number {
     return this.userMoney;
+  }
+
+  public saveAFire(fireTimeSecond: number){
+    /* 100000cos(ln((x+900)/900)) */
+    let bonus = 100 * 10000 * Math.cos( Math.log( (fireTimeSecond + 900) / 900 ) );
+    this.modifyUserMoney(bonus);
   }
 }
