@@ -44,6 +44,12 @@ export class FirePoint implements FireCarScheduleInterface {
     return this.removeSaveFirePower(fireCars);
   }
 
+  public outAllFireCars(): FireCar[]{
+    let fireCars: FireCar[] = [];
+    this.saveFirePower.forEach(fireCar => fireCars.push(fireCar));
+    return this.outFireCars(fireCars);
+  }
+
   private saveFirePowerChange() {
     /* 更新 */
     let currentTime = this.statusService.getGameTime();
@@ -78,13 +84,26 @@ export class FirePoint implements FireCarScheduleInterface {
 
     /* 最后才减少灭火力量 */
     let hasFireCarArray: FireCar[] = [];
+    let deleteElementIndex: number[] = [];
     fireCarArray.forEach(fireCar => {
       let index = this.saveFirePower.indexOf(fireCar);
       if (index >= 0) {
-        this.saveFirePower.splice(index, 1);
+        // this.saveFirePower.splice(index, 1);
         hasFireCarArray.push(fireCar);
+        deleteElementIndex.push(index);
       }
     });
+
+    deleteElementIndex.forEach(index => {
+      delete this.saveFirePower[index];
+    });
+
+    for(let i = 0;i < this.saveFirePower.length;i++){
+      if(!this.saveFirePower[i]){
+        this.saveFirePower.splice(i, 1);
+        i--;
+      }
+    }
     return hasFireCarArray;
   }
 

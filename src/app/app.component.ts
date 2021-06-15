@@ -229,11 +229,12 @@ export class AppComponent implements AfterViewInit {
       if (!!firePoint) {
         /* add to PathService */
         let fireCars: FireCar[] = event.fireStation.saveFire(event.selectFireCarNum);
-        this.pathService.registerPath(await this.pathService.requestAPath(
+        console.log({fireCars});
+        this.pathService.registerPath(await this.pathService.requestPath(
           startPoint, endPoint, event.fireStation, firePoint, fireCars
         ));
         
-        firePoint.addSaveFirePower(fireCars);
+        // firePoint.addSaveFirePower(fireCars);
         this.showingFirePoint = firePoint;
         alert("消防车已经出发");
       } else {

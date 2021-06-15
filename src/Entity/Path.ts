@@ -3,9 +3,10 @@ import LineString from 'ol/geom/LineString';
 import { FireCar } from './FireCar';
 import { FireCarScheduleInterface } from './FireCarScheduleInterface';
 import { Coordinate } from '../BasicOpenlayerType';
+import VectorSource from 'ol/source/Vector';
 export class Route{
-    private route: LineString;
-    private kmph: number;/* km/h */
+    private readonly route: LineString;
+    private readonly kmph: number;/* km/h */
     constructor(route: LineString, kmph: number){
         this.route = route;
         this.kmph = kmph;
@@ -28,6 +29,7 @@ export class Route{
         /* distance in meter */
         let distance = Route.kmphTomps(kmph) * deltaGameTimeSecond;
         let factor = distance / routeMeter;
+        if(factor < 0) factor = 0;
         return factor;
     }
 
@@ -38,6 +40,10 @@ export class Route{
 
     public getSecond(): number{
         return this.route.getLength() / Route.kmphTomps(this.kmph);
+    }
+
+    public getRoute(): LineString{
+        return this.route;
     }
 }
 
@@ -50,25 +56,64 @@ export class Path{
     private startTime: number;
     private currentRouteIndex: number;
     private currentRouteStartTime: number;
+    private features: Feature[];
+    private readonly vectorSource: VectorSource;
     
     constructor(
-        routes: Feature[] | Route[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar
+        routes: Route[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar, vectorSource
     ){
-        if(routes[0] instanceof Feature){
-            this.routes = [];
-            routes.forEach((e: Feature) => {
-                let geometry: LineString = e.getGeometry();
-                let speed: number = e.get("speed");
-                let route: Route = new Route(geometry, speed);
-                this.routes.push(route);
-            });
-        }else{
-            this.routes = routes;
-        }
+        this.routes = routes;
 
         this.from = from;
         this.to = to;
         this.fireCar = fireCar;
+
+        this.vectorSource = vectorSource;
+    }
+    /**
+     * 向目的地添加消防车
+     */
+    inFireCar(): void {
+        this.to.inFireCars([this.fireCar]);
+    }
+
+    /**
+     * 向出发地减少消防车
+     */
+    outFireCar(): void {
+        this.from.outFireCars([this.fireCar]);
+    }
+
+    public displayPath(){
+        let features: Feature[] = [];
+        this.routes.forEach(e => {
+            let feature: Feature = new Feature({
+                geometry: e.getRoute()
+            });
+            this.vectorSource.addFeature(feature);
+            features.push(feature);
+        });
+        this.features = features;
+    }
+
+    public removePath(){
+        this.features.forEach(e => {
+            this.vectorSource.removeFeature(e);
+        });
+        this.features = [];
+    }
+
+    public static transformFeaturesToRoutes(
+        features: Feature[]
+    ): Route[]{
+        let routes: Route[] = [];
+        features.forEach((e: Feature) => {
+            let geometry: LineString = e.getGeometry();
+            let speed: number = e.get("speed");
+            let route: Route = new Route(geometry, speed);
+            routes.push(route);
+        });
+        return routes;
     }
 
     /**

@@ -26,6 +26,9 @@ import {
 import {
   UUID
 } from '../UUID';
+import { PathService } from './PathService';
+import { Coordinate } from 'src/BasicOpenlayerType';
+import { FireStation } from 'src/Entity/FireStation';
 
 @Injectable({
   providedIn: 'root',
@@ -36,7 +39,8 @@ export class FireService {
   constructor(
     private gameTimeService: GameTimeService,
     private statusService: StatusService,
-    private fireThingLayerService: FireThingLayerService
+    private fireThingLayerService: FireThingLayerService,
+    private pathService: PathService
   ) {
     this.firePointFeatureList = new Array < Feature > ();
   }
@@ -85,13 +89,13 @@ export class FireService {
       });
 
       /* 如何消除火灾，从数据源中也必须消除 */
-
       for (var i = 0; i < this.firePointFeatureList.length; i++) {
         let e: Feature = this.firePointFeatureList[i];
         let firePoint: FirePoint = < FirePoint > FireThingLayerService.getDataFromFeature(e);
-        if (firePoint.getCurrentFireLevel() <= 0) {
+        if (firePoint.getCurrentFireLevel() <= 0) {/* 火灾结束 */
           this.fireThingLayerService.removeFeature(e);
           whenFireDone(firePoint);
+          FireService.backFireCars(this.pathService, this.fireThingLayerService, e);
           /* 是否能令firePoint指向的内存设置为null, 即将其销毁 */
           this.firePointFeatureList.splice(i, 1); // 将使后面的元素依次前移，数组长度减1
           i--; // 如果不减，将漏掉一个元素
@@ -100,6 +104,23 @@ export class FireService {
     }, 2, true);
   }
 
+  private static backFireCars(
+    pathService: PathService, fireThingLayerService: FireThingLayerService, firePointFeature: Feature
+  ){
+    let startPoint: Coordinate = firePointFeature.getGeometry().getFirstCoordinate();
+    let firePoint: FirePoint = < FirePoint > FireThingLayerService.getDataFromFeature(firePointFeature);
+
+    let fireCars: FireCar[] = firePoint.outAllFireCars();
+    fireCars.forEach(async (fireCar: FireCar) => {
+      let fireStation: FireStation = fireCar.getRefFireStation();
+      let fireStationFeature: Feature = fireThingLayerService.getFeatureBy(fireStation);
+      let endPoint: Coordinate = fireStationFeature.getGeometry().getFirstCoordinate();
+      pathService.registerPath(await pathService.requestPath(
+        startPoint, endPoint, firePoint, fireStation, [fireCar]
+      ));
+    });
+    
+  }
   public randomFire() {
     return new Task(
       10,

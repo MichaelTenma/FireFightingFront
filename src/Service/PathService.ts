@@ -35,6 +35,8 @@ import GeoJSON from 'ol/format/GeoJSON';
 import {HttpService} from './HttpService';
 import WKT from 'ol/format/WKT';
 
+import {TimeUtil} from '../TimeUtil';
+
 const wktFormat = new WKT();
 @Injectable({
   providedIn: 'root',
@@ -64,22 +66,47 @@ export class PathService {
 
   private moveFeatureInPath() {
     this.gameTimeService.registerTask(() => {
-      this.pathList.forEach(path => {
+
+      for (var i = 0; i < this.pathList.length; i++) {
+        let path: Path = this.pathList[i];
         let fireCar = path.getFireCar();
         let fireCarFeature: Feature = this.fireThingLayerService.getFeatureBy(fireCar);
         let currentTime: Date = this.gameTimeService.getGameTime();
         let coordinate: Coordinate = path.getCoordinateAt(currentTime.valueOf());
         if (!coordinate) {
           /* 无路可走了 */
-          // console.log("无路可走");
+          console.log("无路可走");
+
+          path.inFireCar();
+
+          path.removePath();
           this.fireThingLayerService.setVisibility(fireCarFeature, false);
+          this.pathList.splice(i, 1); // 将使后面的元素依次前移，数组长度减1
+          i--; // 如果不减，将漏掉一个元素
         } else {
           this.fireThingLayerService.setVisibility(fireCarFeature, true);
           let currentPoint: Point = new Point(coordinate);
           fireCarFeature.setGeometry(currentPoint);
         }
-        // this.fireThingLayerService.renderMap();
-      })
+      }
+
+      // this.pathList.forEach(path => {
+      //   let fireCar = path.getFireCar();
+      //   let fireCarFeature: Feature = this.fireThingLayerService.getFeatureBy(fireCar);
+      //   let currentTime: Date = this.gameTimeService.getGameTime();
+      //   let coordinate: Coordinate = path.getCoordinateAt(currentTime.valueOf());
+      //   if (!coordinate) {
+      //     /* 无路可走了 */
+      //     // console.log("无路可走");
+      //     path.removePath();
+      //     this.fireThingLayerService.setVisibility(fireCarFeature, false);
+      //   } else {
+      //     this.fireThingLayerService.setVisibility(fireCarFeature, true);
+      //     let currentPoint: Point = new Point(coordinate);
+      //     fireCarFeature.setGeometry(currentPoint);
+      //   }
+      //   // this.fireThingLayerService.renderMap();
+      // })
     }, 5, true);
   }
 
@@ -109,25 +136,11 @@ export class PathService {
   //   return new Path([res], from, to, fireCars[0]);
   // }
 
-  public async requestAPath(fromPoint: Coordinate, toPoint: Coordinate, from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCars: FireCar[]): Promise < Path > {
-    // let geoJsonFormat: GeoJSON = new GeoJSON();
-    // let res = await new Promise < Feature[] > ((resolve) => {
-    //   // this.httpClient.get('./assets/path.json')
-    //   this.httpClient.get('http://localhost:8080/route/getKBestRoute')
-    //     .subscribe((response) => {
-    //       let fetures: Feature[] = geoJsonFormat.readFeatures(response, {
-    //         dataProjection: 'EPSG:4326',
-    //         featureProjection: 'EPSG:3857'
-    //       });
-
-    //       resolve(fetures);
-    //     });
-    // })
-    // console.log(res);
-    // this.routeSource.addFeatures(res);
-    
-    // return new Path(res, from, to, fireCars[0]);
-
+  public async requestPath(
+    fromPoint: Coordinate, toPoint: Coordinate, 
+    from: FireCarScheduleInterface, to: FireCarScheduleInterface, 
+    fireCars: FireCar[]
+  ): Promise < Path[] > {
     let data = await this.httpService.getFromEnd(`/route/getBestRoute?x1=${fromPoint[0]}&y1=${fromPoint[1]}&x2=${toPoint[0]}&y2=${toPoint[1]}&srid=3857`);
     let routeFeatures: Feature[] = [];
     data.route.forEach(e => {
@@ -144,15 +157,26 @@ export class PathService {
       routeFeatures.push(routeFeature);
     })
     console.log({routeFeatures});
-    this.routeSource.addFeatures(routeFeatures);
-    return new Path(routeFeatures, from, to, fireCars[0]);
+    // this.routeSource.addFeatures(routeFeatures);
+
+    let routes: Route[] = Path.transformFeaturesToRoutes(routeFeatures);
+
+    let paths: Path[] = [];
+    fireCars.forEach(e => {
+      let path: Path = new Path(routes, from, to, e, this.routeSource);
+      paths.push(path);
+    });
+    return paths;
   }
 
-  public registerPath(path: Path) {
-    this.pathList.push(path);
-    // this.startAnimation(path);
-    path.start(this.gameTimeService.getGameTime().getTime());
-
+  public registerPath(paths: Path[]) {
+    for(let i = 0; i < paths.length;i++){
+      let path = paths[i];
+      path.displayPath();
+      /* 每辆车相隔一个游戏分钟出警 */
+      path.start(this.gameTimeService.getGameTime().getTime() + i * 60 * 1000);
+      this.pathList.push(path);
+    }
   }
 
   public getRouterLayer(): VectorLayer{
