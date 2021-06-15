@@ -6,12 +6,12 @@ import { FireThing } from '../FireThing';
 })
 export class FireThingService{
     private imageList : FireThing[] = [];
-    private readonly firePoint: FireThing = new FireThing("火灾点", "./assets/FireImage/火灾点.png", 0, 0.5);
+    private readonly firePoint: FireThing = new FireThing("火灾点", "./assets/FireImage/火灾点.png", 0);
 
     constructor(){
-        this.imageList.push(new FireThing("消防车", "./assets/FireImage/消防车1.png", 1000000, 0.4));
-        // this.imageList.push(new FireThing("消防车2", "./assets/FireImage/消防车2.png", 1000000, 0.4));
-        this.imageList.push(new FireThing("消防站点", "./assets/FireImage/消防站点.png", 10000000, 0.3));
+        this.imageList.push(new FireThing("消防车", "./assets/FireImage/消防车1.png", 1000000));
+        // this.imageList.push(new FireThing("消防车2", "./assets/FireImage/消防车2.png", 1000000));
+        this.imageList.push(new FireThing("消防站点", "./assets/FireImage/消防站点.png", 10000000));
     }
 
     getFireThingByName(name : String) : FireThing{

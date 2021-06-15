@@ -28,10 +28,10 @@ export class Task {
   private repeat: boolean;
 
   /* 当前轮是否已经开始执行 */
-//   private hasCurrentRun: boolean;
+  //   private hasCurrentRun: boolean;
 
-//   private hasDone: boolean = false;
-private restRunTime: number;
+  //   private hasDone: boolean = false;
+  private restRunTime: number;
 
   /**
    * 就是让task在游戏时间中t秒后执行
@@ -70,13 +70,13 @@ private restRunTime: number;
        * 保护正在执行的程序，避免被中断，
        * 如果发生中断可以在下一次瞬间立刻恢复 
        */
-    //   e.hasDone = false;
-    //   e.hasCurrentRun = true;
-        
+      //   e.hasDone = false;
+      //   e.hasCurrentRun = true;
+
       e.task();
-      this.restRunTime --;
+      this.restRunTime--;
       this.resetRun();
-    //   e.hasDone = true;
+      //   e.hasDone = true;
     };
 
     let observable: any;
@@ -132,8 +132,8 @@ private restRunTime: number;
 
   private resetRun() {
     // this.hasCurrentRun = false;
-    if(this.repeat){
-        this.restRunTime ++;
+    if (this.repeat) {
+      this.restRunTime++;
     }
     this.setBeginRealTime();
   }
@@ -225,7 +225,7 @@ export class GameTimeService {
 
   public registerTask(task: Function, second: number, repeat: boolean) {
     let modifyTask: Task = new Task(second, () => {
-    //   console.log(this.getGameTime());
+      //   console.log(this.getGameTime());
       task();
     }, repeat);
 

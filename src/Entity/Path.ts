@@ -64,7 +64,7 @@ export class Path{
     private readonly vectorSource: VectorSource;
     
     constructor(
-        routes: Route[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar, vectorSource
+        routes: Route[], from: FireCarScheduleInterface, to: FireCarScheduleInterface, fireCar: FireCar, vectorSource: VectorSource
     ){
         this.routes = routes;
 

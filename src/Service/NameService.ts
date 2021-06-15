@@ -4,11 +4,6 @@ import {
 import {
   HttpService
 } from './HttpService';
-
-import { FireCar } from '../Entity/FireCar';
-import { FirePoint } from '../Entity/FirePoint';
-import { FireStation } from '../Entity/FireStation';
-import { FireThingLayerService } from "./FireThingLayerService";
 import { FireThingEnum } from '../FireThingEnum';
 import { Coordinate } from '../BasicOpenlayerType';
 import { UUID } from '../UUID';

@@ -31,11 +31,9 @@ import {
   Style,
   Stroke
 } from 'ol/style';
-import GeoJSON from 'ol/format/GeoJSON';
 import {HttpService} from './HttpService';
 import WKT from 'ol/format/WKT';
 
-import {TimeUtil} from '../TimeUtil';
 import {RecordService} from './RecordService';
 import { StatisticFactorEnum } from '../StatisticFactorEnum';
 import { FireThingEnum } from 'src/FireThingEnum';
