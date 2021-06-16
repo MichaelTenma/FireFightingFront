@@ -40,17 +40,17 @@ export class StatusService {
   private modifyUserMoney(deltaMoney: number) {
     this.userMoney += deltaMoney;
   }
-  private addUserMoney(deltaMoney: number) {
-    this.modifyUserMoney(Math.abs(deltaMoney));
-  }
-  private minusUserMoney(deltaMoney: number) {
-    this.modifyUserMoney(-Math.abs(deltaMoney))
-  }
+  // private addUserMoney(deltaMoney: number) {
+  //   this.modifyUserMoney(Math.abs(deltaMoney));
+  // }
+  // private minusUserMoney(deltaMoney: number) {
+  //   this.modifyUserMoney(-Math.abs(deltaMoney))
+  // }
 
   public buyFireThing(fireThing: FireThing): boolean {
     let res: boolean = this.userMoney >= fireThing.getMoney();
     if(res){
-        this.minusUserMoney(fireThing.getMoney());
+      this.modifyUserMoney(-fireThing.getMoney());
     }
     return res;
   }

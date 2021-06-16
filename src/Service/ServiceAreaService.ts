@@ -22,14 +22,14 @@ const wktFormat = new WKT();
 })
 export class ServiceAreaService {
 
-  private routeSource: VectorSource;
-  private routerLayer: VectorLayer;
+  private serviceAreaSource: VectorSource;
+  private serviceAreaLayer: VectorLayer;
   constructor(
     private httpService: HttpService
   ) {
-    this.routeSource = new VectorSource();
-    this.routerLayer = new VectorLayer({
-      source: this.routeSource,
+    this.serviceAreaSource = new VectorSource();
+    this.serviceAreaLayer = new VectorLayer({
+      source: this.serviceAreaSource,
       style: new Style({
         stroke: new Stroke({
           width: 3.5,
@@ -48,16 +48,16 @@ export class ServiceAreaService {
       dataProjection: 'EPSG:3857',
       featureProjection: 'EPSG:3857'
     });
-    this.routeSource.clear();
-    this.routeSource.addFeature(serviceArea);
+    this.serviceAreaSource.clear();
+    this.serviceAreaSource.addFeature(serviceArea);
   }
 
   public removeServiceArea(){
-      this.routeSource.clear();
+      this.serviceAreaSource.clear();
   }
 
   public getServiceAreaLayer(): VectorLayer{
-      return this.routerLayer;
+      return this.serviceAreaLayer;
   }
 
 }

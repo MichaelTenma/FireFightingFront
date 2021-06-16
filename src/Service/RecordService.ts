@@ -120,7 +120,7 @@ export class RecordService {
   }
 
   private addRecordsType(recordsName: string): Records {
-    let records: Records = this.getRecords(recordsName);;
+    let records: Records = this.getRecords(recordsName);
     if (!records) {
       records = new Records(recordsName);
       this.recordsList.push(records);
